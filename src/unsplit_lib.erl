@@ -41,13 +41,13 @@
 %% @end
 %%
 no_action(init, [Tab|_]) ->
-    error_logger:format("Will not merge table ~p", [Tab]),
+    logger:error("Will not merge table ~p", [Tab]),
     stop.
 
 %% @spec last_modified(Phase, State) -> merge_ret()
 %% @doc Keeps the last modified object, based on the `modified' attribute
 %%
-%% This function assumes that the table to be merged contains objects with 
+%% This function assumes that the table to be merged contains objects with
 %% a `modified' attribute.
 %% @end
 %%
@@ -74,14 +74,14 @@ bag(Objs, S) ->
 %%
 %% `{unsplit_method, {unsplit_lib, last_version, [Attr]}}'
 %%
-%% The function will choose the object that has the greatest value in the 
+%% The function will choose the object that has the greatest value in the
 %% position given by `Attr'.
 %% @end
 %%
 last_version(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
-            error_logger:format("Cannot merge table ~p."
+            logger:error("Cannot merge table ~p."
                                 "Missing ~p attribute", [Tab, Attr]),
             stop;
         true ->
@@ -99,7 +99,7 @@ last_version(Objs, {T, P} = S) when is_list(Objs) ->
 vclock(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
-            error_logger:format("Cannot merge table ~p."
+            logger:error("Cannot merge table ~p."
                                 "Missing ~p attribute", [Tab, Attr]),
             stop;
         true ->
