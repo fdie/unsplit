@@ -104,17 +104,17 @@ handle_cast(_Msg, State) ->
 %%--------------------------------------------------------------------
 handle_info({mnesia_system_event, 
              {inconsistent_database, Context, Node}}, State) ->
-    logger:info("inconsistency. Context = ~p; Node = ~p~n", [Context, Node]),
+    logger:info("inconsistency. Context = ~p; Node = ~p", [Context, Node]),
     Res = global:trans(
             {?LOCK, self()},
             fun() ->
-                    logger:info("have lock...~n", []),
+                    logger:info("have lock...", []),
                     stitch_together(node(), Node)
             end),
-    logger:info("Res = ~p~n", [Res]),
+    logger:info("Unsplit result = ~p", [Res]),
     {noreply, State};
 handle_info(_Info, State) ->
-    logger:info("Got event: ~p~n", [_Info]),
+    logger:info("Got event: ~p", [_Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -142,7 +142,7 @@ code_change(_OldVsn, State, _Extra) ->
 stitch_together(NodeA, NodeB) ->
     case lists:member(NodeB, mnesia:system_info(running_db_nodes)) of
         true ->
-            logger:info("~p already stitched, it seems. All is well.~n", [NodeB]),
+            logger:info("~p already stitched, it seems. All is well.", [NodeB]),
             ok;
         false ->
             do_stitch_together(NodeA, NodeB)
@@ -152,14 +152,14 @@ do_stitch_together(NodeA, NodeB) ->
     [IslandA, IslandB] =
         [rpc:call(N, mnesia, system_info, [running_db_nodes]) ||
             N <- [NodeA, NodeB]],
-    logger:info("IslandA = ~p;~nIslandB = ~p~n", [IslandA, IslandB]),
+    logger:info("IslandA = ~p;~nIslandB = ~p", [IslandA, IslandB]),
     TabsAndNodes = affected_tables(IslandA, IslandB),
     Tabs = [T || {T,_} <- TabsAndNodes],
-    logger:info("Affected tabs = ~p~n", [Tabs]),
+    logger:info("Affected tabs = ~p", [Tabs]),
     DefaultMethod = default_method(),
     TabMethods = [{T, Ns, get_method(T, DefaultMethod)}
                   || {T,Ns} <- TabsAndNodes],
-    logger:info("Methods = ~p~n", [TabMethods]),
+    logger:info("Methods = ~p", [TabMethods]),
     mnesia_controller:connect_nodes(
       [NodeB],
       fun(MergeF) ->
@@ -169,7 +169,7 @@ do_stitch_together(NodeA, NodeB) ->
                       %% For now, assume that we have merged with the right
                       %% node, and not with others that could also be
                       %% consistent (mnesia gurus, how does this work?)
-                      logger:info("stitching: ~p~n", [TabMethods]),
+                      logger:info("stitching: ~p", [TabMethods]),
                       stitch_tabs(TabMethods, NodeB),
                       Res;
                   Other ->
@@ -181,7 +181,7 @@ show_locks(OtherNode) ->
     Info = [{node(), mnesia_locker:get_held_locks()},
             {OtherNode, rpc:call(OtherNode,
                                  mnesia_locker,get_held_locks,[])}],
-    logger:info("Held locks = ~p~n", [Info]).
+    logger:info("Held locks = ~p", [Info]).
 
 
 stitch_tabs(TabMethods, NodeB) ->
@@ -193,9 +193,9 @@ stitch_tabs(TabMethods, NodeB) ->
 
 
 do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
-    logger:info("do_stitch(~p, ~p).~n", [TM,Remote]),
+    logger:info("do_stitch(~p, ~p).", [TM,Remote]),
     HasCopy = lists:member(Remote, Ns),
-    logger:info("~p has a copy of ~p? -> ~p~n", [Remote, Tab, HasCopy]),
+    logger:info("~p has a copy of ~p? -> ~p", [Remote, Tab, HasCopy]),
     Attrs = mnesia:table_info(Tab, attributes),
     S0 = #st{module = M, function = F, extra_args = XArgs,
              table = Tab, attributes = Attrs,
@@ -213,7 +213,7 @@ do_stitch({Tab, Ns, {M, F, XArgs}} = TM, Remote) ->
 -spec check_return(unsplit:merge_ret(), #st{}) -> #st{}.
 
 check_return(Ret, S) ->
-    logger:info(" -> ~p~n", [Ret]),
+    logger:info(" -> ~p", [Ret]),
     case Ret of
         stop -> throw(?DONE);
         {ok, St} ->
@@ -308,7 +308,7 @@ affected_tables(IslandA, IslandB) ->
               Nodes = lists:concat(
                         [mnesia:table_info(T, C) ||
 			    C <- backend_types()]),
-              logger:info("nodes_of(~p) = ~p~n", [T, Nodes]),
+              logger:info("nodes_of(~p) = ~p", [T, Nodes]),
               case {intersection(IslandA, Nodes), 
                     intersection(IslandB, Nodes)} of 
                   {[_|_], [_|_]} ->

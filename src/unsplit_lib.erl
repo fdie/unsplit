@@ -41,7 +41,7 @@
 %% @end
 %%
 no_action(init, [Tab|_]) ->
-    error_logger:format("Will not merge table ~p~n", [Tab]),
+    error_logger:format("Will not merge table ~p", [Tab]),
     stop.
 
 %% @spec last_modified(Phase, State) -> merge_ret()
@@ -82,10 +82,10 @@ last_version(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
             error_logger:format("Cannot merge table ~p."
-                                "Missing ~p attribute~n", [Tab, Attr]),
+                                "Missing ~p attribute", [Tab, Attr]),
             stop;
         true ->
-            logger:info("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            logger:info("Starting merge of ~p (~p)", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 last_version(done, _S) ->
@@ -100,10 +100,10 @@ vclock(init, [Tab, Attrs, Attr]) ->
     case lists:member(Attr, Attrs) of
         false ->
             error_logger:format("Cannot merge table ~p."
-                                "Missing ~p attribute~n", [Tab, Attr]),
+                                "Missing ~p attribute", [Tab, Attr]),
             stop;
         true ->
-            logger:info("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            logger:info("Starting merge of ~p (~p)", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 vclock(done, _) ->
@@ -127,14 +127,14 @@ vclock(Objs, {T, P} = S) ->
     {ok, Actions, same, S}.
 
 last_version_entry(Obj, T, P) ->
-    logger:info("last_version_entry(~p)~n", [Obj]),
+    logger:info("last_version_entry(~p)", [Obj]),
     compare(Obj, T, P, fun(A, B) when A < B -> left;
 			  (A, B) when A > B -> right;
 			  (_, _) -> neither
 		       end).
 
 compare(Obj, T, P, Comp) ->
-    logger:info("compare(~p)~n", [Obj]),
+    logger:info("compare(~p)", [Obj]),
     case Obj of
         {A, []} -> {write, A};
         {[], B} -> {write, B};
