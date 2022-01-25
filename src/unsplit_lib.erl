@@ -85,7 +85,7 @@ last_version(init, [Tab, Attrs, Attr]) ->
                                 "Missing ~p attribute~n", [Tab, Attr]),
             stop;
         true ->
-            io:fwrite("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            logger:info("Starting merge of ~p (~p)~n", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 last_version(done, _S) ->
@@ -103,7 +103,7 @@ vclock(init, [Tab, Attrs, Attr]) ->
                                 "Missing ~p attribute~n", [Tab, Attr]),
             stop;
         true ->
-            io:fwrite("Starting merge of ~p (~p)~n", [Tab, Attrs]),
+            logger:info("Starting merge of ~p (~p)~n", [Tab, Attrs]),
             {ok, {Tab, pos(Attr, Tab, Attrs)}}
     end;
 vclock(done, _) ->
@@ -127,14 +127,14 @@ vclock(Objs, {T, P} = S) ->
     {ok, Actions, same, S}.
 
 last_version_entry(Obj, T, P) ->
-    io:fwrite("last_version_entry(~p)~n", [Obj]),
+    logger:info("last_version_entry(~p)~n", [Obj]),
     compare(Obj, T, P, fun(A, B) when A < B -> left;
 			  (A, B) when A > B -> right;
 			  (_, _) -> neither
 		       end).
 
 compare(Obj, T, P, Comp) ->
-    io:fwrite("compare(~p)~n", [Obj]),
+    logger:info("compare(~p)~n", [Obj]),
     case Obj of
         {A, []} -> {write, A};
         {[], B} -> {write, B};
